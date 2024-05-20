@@ -17,11 +17,11 @@
             "scaleInEditor": 4
         },
         "Main_Map.tmx": {
-            "scale": 3,
-            "selectedLayer": 4,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 440.66666666666663,
-                "y": 233.33333333333331
+                "x": 1646.6666666666665,
+                "y": 176
             }
         },
         "Main_Map.tmx#Kenny_Base": {
@@ -30,7 +30,7 @@
         },
         "Main_Map.tmx#Kenny_Blocks_Dirt": {
             "scaleInDock": 4,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         },
         "Main_Map.tmx#Kenny_Blocks_Rock": {
             "scaleInDock": 4,

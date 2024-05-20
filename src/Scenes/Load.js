@@ -18,6 +18,7 @@ class Load extends Phaser.Scene {
 
         this.load.setPath("./assets/kenney_pixel-platformer-blocks/Tilemap/");
         this.load.image("tilemap_rocks", "rock_packed.png");
+        this.load.image("tilemap_stone", "stone_packed.png");
         
         this.load.setPath("./assets/");
         this.load.tilemapTiledJSON("Main_Level", "Main_Map.tmj");   // Tilemap in JSON
