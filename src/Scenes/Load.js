@@ -8,6 +8,7 @@ class Load extends Phaser.Scene {
 
         // Load characters spritesheet
         this.load.spritesheet("platformer_characters", "tilemap-characters_packed.png", { frameWidth: 24, frameHeight: 24 });
+        this.load.image("tilemap_background", "tilemap-background_green.png");
 
         // Load tilemap information
         this.load.image("tilemap_basic", "tilemap_packed.png");

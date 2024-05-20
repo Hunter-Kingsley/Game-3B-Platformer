@@ -18,6 +18,20 @@ class Platformer extends Phaser.Scene {
         this.RightWallJumpCooldownCounter = 0;
         this.LeftWallJumpCooldownCounter = 0;
 
+        this.mainbackground1 = this.add.image(370, 200, 'tilemap_background');
+        this.mainbackground1.scale = 15
+        this.mainbackground2 = this.add.image(1080, 200, 'tilemap_background');
+        this.mainbackground2.scale = 15
+        this.mainbackground3 = this.add.image(1790, 200, 'tilemap_background');
+        this.mainbackground3.scale = 15
+        this.mainbackground4 = this.add.image(2500, 200, 'tilemap_background');
+        this.mainbackground4.scale = 15
+
+        this.mainbackground1.scrollFactorX = 0.3;
+        this.mainbackground2.scrollFactorX = 0.3;
+        this.mainbackground3.scrollFactorX = 0.3;
+        this.mainbackground4.scrollFactorX = 0.3;
+
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("Main_Level", 18, 18, 45, 25);
@@ -93,6 +107,7 @@ class Platformer extends Phaser.Scene {
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-Q', () => {
+            my.sprite.player.x = 4100;
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
@@ -100,9 +115,11 @@ class Platformer extends Phaser.Scene {
         // this.cameras.main.setBounds(0, 0, 4318, 50);
         // this.cameras.main.startFollow(my.sprite.player);
 
-        this.cameras.main.setBounds(0, 0, 4318, this.map.heightInPixels);
+        this.cameras.main.setBounds(36, 0, 4248, this.map.heightInPixels);
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(150, 150);
+
+        console.log(this.map);
     }
 
     update() {
