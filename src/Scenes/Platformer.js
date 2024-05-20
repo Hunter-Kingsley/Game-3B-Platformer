@@ -11,6 +11,11 @@ class Platformer extends Phaser.Scene {
         this.JUMP_VELOCITY = -700;
         this.RightWallJumpCooldown = 55;
         this.LeftWallJumpCooldown = 55;
+        this.player_score = 0;
+    }
+
+    updateScore() {
+        my.text.score.setText("Coins: " + this.player_score);
     }
 
     create() {
@@ -99,6 +104,8 @@ class Platformer extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             obj2.destroy(); // remove coin on overlap
+            this.player_score += 1;
+            this.updateScore();
         });
 
         this.coinGroup.getChildren().forEach((coin) => {
@@ -107,7 +114,7 @@ class Platformer extends Phaser.Scene {
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-Q', () => {
-            my.sprite.player.x = 4100;
+            //my.sprite.player.x = 4100;
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
@@ -119,12 +126,17 @@ class Platformer extends Phaser.Scene {
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(150, 150);
 
-        console.log(this.map);
+        my.text.score = this.add.bitmapText(25, 30, "Minecraft", "Coins: " + this.player_score);
+        my.text.score.setFontSize(50);
+        my.text.score.setBlendMode(Phaser.BlendModes.DARKEN);
     }
 
     update() {
 
-        //console.log(my.sprite.player.x);
+        //console.log(this.cameras.main.scrollX);
+
+        my.text.score.x = this.cameras.main.scrollX + 25;
+        my.text.score.y = this.cameras.main.scrollY + 25;
 
         if(this.RightWallJumpCooldownCounter > 0) {
             this.RightWallJumpCooldownCounter--;

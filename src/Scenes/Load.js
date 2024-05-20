@@ -23,6 +23,7 @@ class Load extends Phaser.Scene {
         
         this.load.setPath("./assets/");
         this.load.tilemapTiledJSON("Main_Level", "Main_Map.tmj");   // Tilemap in JSON
+        this.load.bitmapFont("Minecraft", "Minecraft_1.png", "Minecraft.fnt");
     }
 
     create() {
