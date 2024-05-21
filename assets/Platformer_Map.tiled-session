@@ -20,9 +20,12 @@
             "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1646.6666666666665,
-                "y": 176
+                "x": 608,
+                "y": 175.33333333333334
             }
+        },
+        "Main_Map.tmx#Kenny_Background": {
+            "scaleInDock": 1
         },
         "Main_Map.tmx#Kenny_Base": {
             "scaleInDock": 4,

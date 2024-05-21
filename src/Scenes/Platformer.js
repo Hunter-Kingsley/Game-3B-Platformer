@@ -12,6 +12,7 @@ class Platformer extends Phaser.Scene {
         this.RightWallJumpCooldown = 55;
         this.LeftWallJumpCooldown = 55;
         this.player_score = 0;
+        this.player_alive = true;
     }
 
     updateScore() {
@@ -60,6 +61,8 @@ class Platformer extends Phaser.Scene {
         this.groundLayer4.setScale(2.0);
         this.Background1 = this.map.createLayer("Background_Industrial", this.tileset2, 0, 0);
         this.Background1.setScale(2.0);
+        this.Background1 = this.map.createLayer("Background_Normal", this.tileset, 0, 0);
+        this.Background1.setScale(2.0);
 
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
@@ -75,15 +78,6 @@ class Platformer extends Phaser.Scene {
             collides: true
         });
 
-        // set up player avatar
-        my.sprite.player = this.physics.add.sprite(game.config.width/4, game.config.height/2, "platformer_characters").setScale(SCALE)
-
-        // Enable collision handling
-        this.physics.add.collider(my.sprite.player, this.groundLayer);
-        this.physics.add.collider(my.sprite.player, this.groundLayer2);
-        this.physics.add.collider(my.sprite.player, this.groundLayer3);
-        this.physics.add.collider(my.sprite.player, this.groundLayer4);
-
         this.coins = this.map.createFromObjects("Coins", {
             name: "Coin",
             key: "spritesheet_basic",
@@ -96,11 +90,35 @@ class Platformer extends Phaser.Scene {
             coin.setScale(2.0);
         });
 
+        this.enemies = this.map.createFromObjects("Enemies", {
+            name: "Robot",
+            key: "platformer_characters",
+            frame: 21
+        });
+
+        this.enemies.map((enemy) => {
+            enemy.x *= 2.0;
+            enemy.y *= 2.0;
+            enemy.setScale(1.7);
+        });
+
+        // set up player avatar
+        my.sprite.player = this.physics.add.sprite(game.config.width/4, game.config.height/2, "platformer_characters").setScale(SCALE)
+
+        // Enable collision handling
+        this.physics.add.collider(my.sprite.player, this.groundLayer);
+        this.physics.add.collider(my.sprite.player, this.groundLayer2);
+        this.physics.add.collider(my.sprite.player, this.groundLayer3);
+        this.physics.add.collider(my.sprite.player, this.groundLayer4);
+
+
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.enemies, Phaser.Physics.Arcade.DYNAMIC_BODY);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
         this.coinGroup = this.add.group(this.coins);
+        this.enemyGroup = this.add.group(this.enemies);
 
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             obj2.destroy(); // remove coin on overlap
@@ -110,6 +128,35 @@ class Platformer extends Phaser.Scene {
 
         this.coinGroup.getChildren().forEach((coin) => {
             coin.anims.play("coin_spin");
+        });
+
+        console.log(my.sprite.player)
+
+        // Player Death
+        this.physics.add.overlap(my.sprite.player, this.enemyGroup, (obj1, obj2) => {
+            this.player_alive = false;
+            my.sprite.player.body.setAccelerationX(0);
+            my.sprite.player.body.setAccelerationY(0);
+            my.sprite.player.body.setFriction(0.1);
+            my.sprite.player.body.setDragX(400);
+
+            my.sprite.player.anims.play('idle');
+            my.sprite.player.body.rotation = 90;
+        });
+
+        this.enemyGroup.getChildren().forEach((enemy) => {
+            if (enemy.rotation < 0) {
+                enemy.setFlip(true, false);
+            }
+            
+            enemy.body.allowGravity = false;
+            this.physics.add.collider(enemy, this.groundLayer);
+            this.physics.add.collider(enemy, this.groundLayer2);
+            this.physics.add.collider(enemy, this.groundLayer3);
+            this.physics.add.collider(enemy, this.groundLayer4);
+
+            enemy.anims.play("robot_walk");
+            enemy.body.setVelocityX(-100);
         });
 
         // debug key listener (assigned to D key)
@@ -129,6 +176,9 @@ class Platformer extends Phaser.Scene {
         my.text.score = this.add.bitmapText(25, 30, "Minecraft", "Coins: " + this.player_score);
         my.text.score.setFontSize(50);
         my.text.score.setBlendMode(Phaser.BlendModes.DARKEN);
+
+        my.sprite.player.body.setMaxVelocityX(300);
+        my.sprite.player.body.setMaxVelocityY(900);
     }
 
     update() {
@@ -152,60 +202,79 @@ class Platformer extends Phaser.Scene {
             this.LeftWallJumpCooldownCounter = 0;
         }
 
-        my.sprite.player.body.setMaxVelocityX(300);
-        my.sprite.player.body.setMaxVelocityY(900);
-        if(cursors.left.isDown) {
-            // TODO: have the player accelerate to the left
-            my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
+        if(this.player_alive) {
+            if(cursors.left.isDown) {
+                // TODO: have the player accelerate to the left
+                my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
 
+                
+                my.sprite.player.resetFlip();
+                my.sprite.player.anims.play('walk', true);
+
+            } else if(cursors.right.isDown) {
+                // TODO: have the player accelerate to the right
+                my.sprite.player.body.setAccelerationX(this.ACCELERATION);
+
+                my.sprite.player.setFlip(true, false);
+                my.sprite.player.anims.play('walk', true);
+
+            } else {
+                // TODO: set acceleration to 0 and have DRAG take over
+                my.sprite.player.body.setAccelerationX(0);
+                my.sprite.player.body.setDragX(this.DRAG);
+
+                my.sprite.player.anims.play('idle');
+            }
+
+            // player jump
+            // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
+            if(!my.sprite.player.body.blocked.down) {
+                my.sprite.player.anims.play('jump');
+            }
+            if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+                // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+
+            }
             
-            my.sprite.player.resetFlip();
-            my.sprite.player.anims.play('walk', true);
+            if(my.sprite.player.body.blocked.right && !my.sprite.player.body.blocked.down && (this.RightWallJumpCooldownCounter < 1) && (my.sprite.player.body.velocity.y > 150)) {
+                my.sprite.player.body.setVelocityY(150);
+            }
+            if(my.sprite.player.body.blocked.left && !my.sprite.player.body.blocked.down && (this.LeftWallJumpCooldownCounter < 1) && (my.sprite.player.body.velocity.y > 150)) {
+                my.sprite.player.body.setVelocityY(150);
+            }
 
-        } else if(cursors.right.isDown) {
-            // TODO: have the player accelerate to the right
-            my.sprite.player.body.setAccelerationX(this.ACCELERATION);
+            if(my.sprite.player.body.blocked.right && Phaser.Input.Keyboard.JustDown(cursors.up) && !(my.sprite.player.body.blocked.down) && (my.sprite.player.body.velocity.y > -100) && (this.RightWallJumpCooldownCounter < 1)) {
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                my.sprite.player.body.setVelocityX(-20000);
+                my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
+                this.RightWallJumpCooldownCounter = this.RightWallJumpCooldown;
+            }
+            if(my.sprite.player.body.blocked.left && Phaser.Input.Keyboard.JustDown(cursors.up) && !(my.sprite.player.body.blocked.down) && (my.sprite.player.body.velocity.y > -100) && (this.LeftWallJumpCooldownCounter < 1)) {
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                my.sprite.player.body.setVelocityX(20000);
+                my.sprite.player.body.setAccelerationX(this.ACCELERATION);
+                this.LeftWallJumpCooldownCounter = this.LeftWallJumpCooldown;
+            }
+        }
+            
 
-            my.sprite.player.setFlip(true, false);
-            my.sprite.player.anims.play('walk', true);
-
-        } else {
-            // TODO: set acceleration to 0 and have DRAG take over
-            my.sprite.player.body.setAccelerationX(0);
-            my.sprite.player.body.setDragX(this.DRAG);
-
-            my.sprite.player.anims.play('idle');
-        }
-
-        // player jump
-        // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
-        if(!my.sprite.player.body.blocked.down) {
-            my.sprite.player.anims.play('jump');
-        }
-        if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-
-        }
-        
-        if(my.sprite.player.body.blocked.right && !my.sprite.player.body.blocked.down && (this.RightWallJumpCooldownCounter < 1) && (my.sprite.player.body.velocity.y > 150)) {
-            my.sprite.player.body.setVelocityY(150);
-        }
-        if(my.sprite.player.body.blocked.left && !my.sprite.player.body.blocked.down && (this.LeftWallJumpCooldownCounter < 1) && (my.sprite.player.body.velocity.y > 150)) {
-            my.sprite.player.body.setVelocityY(150);
-        }
-
-        if(my.sprite.player.body.blocked.right && Phaser.Input.Keyboard.JustDown(cursors.up) && !(my.sprite.player.body.blocked.down) && (my.sprite.player.body.velocity.y > -100) && (this.RightWallJumpCooldownCounter < 1)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-            my.sprite.player.body.setVelocityX(-20000);
-            my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
-            this.RightWallJumpCooldownCounter = this.RightWallJumpCooldown;
-        }
-        if(my.sprite.player.body.blocked.left && Phaser.Input.Keyboard.JustDown(cursors.up) && !(my.sprite.player.body.blocked.down) && (my.sprite.player.body.velocity.y > -100) && (this.LeftWallJumpCooldownCounter < 1)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-            my.sprite.player.body.setVelocityX(20000);
-            my.sprite.player.body.setAccelerationX(this.ACCELERATION);
-            this.LeftWallJumpCooldownCounter = this.LeftWallJumpCooldown;
-        }
+        this.enemyGroup.getChildren().forEach((enemy) => {
+            if (enemy.body.blocked.left) {
+                if (enemy.flipX == false) {
+                    enemy.flipX = true;
+                } else {
+                    enemy.flipX = false;
+                }
+                enemy.body.setVelocityX(100);
+            } else if (enemy.body.blocked.right) {
+                if (enemy.flipX == false) {
+                    enemy.flipX = true;
+                } else {
+                    enemy.flipX = false;
+                }
+                enemy.body.setVelocityX(-100);
+            }
+        });
     }
 }

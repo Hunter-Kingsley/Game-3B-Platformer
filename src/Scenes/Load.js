@@ -64,6 +64,16 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'robot_walk',
+            frames: this.anims.generateFrameNumbers('platformer_characters', {
+                start: 21,
+                end: 22,
+            }),
+            frameRate: 5,
+            repeat: -1
+        });
+
          // ...and pass to the next Scene
          this.scene.start("platformerScene");
     }
