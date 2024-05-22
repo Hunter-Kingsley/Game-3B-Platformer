@@ -104,6 +104,18 @@ class Platformer extends Phaser.Scene {
             enemy.setScale(1.7);
         });
 
+        this.spikes = this.map.createFromObjects("Spikes", {
+            name: "Spike",
+            key: "spritesheet_basic",
+            frame: 68
+        });
+
+        this.spikes.map((spike) => {
+            spike.x *= 2.0;
+            spike.y *= 2.0;
+            spike.setScale(2.0);
+        });
+
         this.checkpoints = this.map.createFromObjects("Checkpoints", {
             name: "Checkpoint",
             key: "spritesheet_basic",
@@ -129,6 +141,7 @@ class Platformer extends Phaser.Scene {
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.enemies, Phaser.Physics.Arcade.DYNAMIC_BODY);
         this.physics.world.enable(this.checkpoints, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.spikes, Phaser.Physics.Arcade.STATIC_BODY);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -154,6 +167,25 @@ class Platformer extends Phaser.Scene {
 
         // Player Death
         this.physics.add.overlap(my.sprite.player, this.enemyGroup, (obj1, obj2) => {
+            if (this.player_alive) {
+                my.sprite.player.body.setAccelerationX(0);
+                my.sprite.player.body.setAccelerationY(0);
+                my.sprite.player.body.setFriction(0.1);
+                my.sprite.player.body.setDragX(400);
+                my.sprite.player.body.setBounce(0.6);
+
+                my.sprite.player.anims.play('idle');
+                my.sprite.player.body.rotation = 90;
+                this.player_score = 0;
+
+                my.text.deathMessage = this.add.bitmapText(game.config.width/2 + this.cameras.main.scrollX - 250, game.config.height/2, "Minecraft0", "          You Died!\nPress [SPACE] to Continue!");
+                my.text.deathMessage.setFontSize(50);
+                my.text.deathMessage.setBlendMode(Phaser.BlendModes.ADD);
+            }
+            this.player_alive = false;
+        });
+
+        this.physics.add.overlap(my.sprite.player, this.spikes, (obj1, obj2) => {
             if (this.player_alive) {
                 my.sprite.player.body.setAccelerationX(0);
                 my.sprite.player.body.setAccelerationY(0);
