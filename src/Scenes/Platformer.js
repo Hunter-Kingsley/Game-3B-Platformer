@@ -209,6 +209,8 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.body.setDragX(400);
                 my.sprite.player.body.setBounce(0.6);
 
+                my.vfx.walking.stop();
+
                 this.sound.play("bot_hit");
 
                 my.sprite.player.anims.play('idle');
@@ -229,6 +231,8 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.body.setFriction(0.1);
                 my.sprite.player.body.setDragX(400);
                 my.sprite.player.body.setBounce(0.6);
+
+                my.vfx.walking.stop();
 
                 this.sound.play("spike_hit");
 
