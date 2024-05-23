@@ -15,6 +15,7 @@ class Platformer extends Phaser.Scene {
         this.player_alive = true;
         this.player_respawn_X = game.config.width/4;
         this.player_respawn_Y = game.config.height/2;
+        this.game_end = false;
     }
 
     updateScore() {
@@ -128,6 +129,18 @@ class Platformer extends Phaser.Scene {
             checkpoint.setScale(2.0);
         });
 
+        this.end_flag = this.map.createFromObjects("End_Goal", {
+            name: "Flag",
+            key: "spritesheet_basic",
+            frame: 112
+        });
+
+        this.end_flag.map((flag) => {
+            flag.x *= 2.0;
+            flag.y *= 2.0;
+            flag.setScale(2.0);
+        });
+
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(this.player_respawn_X, this.player_respawn_Y, "platformer_characters").setScale(SCALE)
 
@@ -142,6 +155,7 @@ class Platformer extends Phaser.Scene {
         this.physics.world.enable(this.enemies, Phaser.Physics.Arcade.DYNAMIC_BODY);
         this.physics.world.enable(this.checkpoints, Phaser.Physics.Arcade.STATIC_BODY);
         this.physics.world.enable(this.spikes, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.end_flag, Phaser.Physics.Arcade.STATIC_BODY);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -149,6 +163,8 @@ class Platformer extends Phaser.Scene {
         this.coinGroup = this.add.group(this.coins);
         this.enemyGroup = this.add.group(this.enemies);
         this.checkpointGroup = this.add.group(this.checkpoints);
+        this.spikeGroup = this.add.group(this.spikes);
+        this.endGroup = this.add.group(this.end_flag);
 
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             if (this.player_alive) {
@@ -161,6 +177,10 @@ class Platformer extends Phaser.Scene {
 
         this.coinGroup.getChildren().forEach((coin) => {
             coin.anims.play("coin_spin");
+        });
+
+        this.endGroup.getChildren().forEach((flag) => {
+            flag.anims.play("flag_wave");
         });
 
         console.log(my.sprite.player)
@@ -185,7 +205,7 @@ class Platformer extends Phaser.Scene {
             this.player_alive = false;
         });
 
-        this.physics.add.overlap(my.sprite.player, this.spikes, (obj1, obj2) => {
+        this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) => {
             if (this.player_alive) {
                 my.sprite.player.body.setAccelerationX(0);
                 my.sprite.player.body.setAccelerationY(0);
@@ -200,6 +220,23 @@ class Platformer extends Phaser.Scene {
                 my.text.deathMessage = this.add.bitmapText(game.config.width/2 + this.cameras.main.scrollX - 250, game.config.height/2, "Minecraft0", "          You Died!\nPress [SPACE] to Continue!");
                 my.text.deathMessage.setFontSize(50);
                 my.text.deathMessage.setBlendMode(Phaser.BlendModes.ADD);
+            }
+            this.player_alive = false;
+        });
+
+        this.physics.add.overlap(my.sprite.player, this.endGroup, (obj1, obj2) => {
+            if (this.player_alive) {
+                my.sprite.player.body.setAccelerationX(0);
+                my.sprite.player.body.setAccelerationY(0);
+
+                my.sprite.player.anims.play('idle');
+                this.player_score = 0;
+
+                my.text.winMessage = this.add.bitmapText(obj2.x - 300, game.config.height/2, "Minecraft0", "           You Win!\nPress [SPACE] to Restart!");
+                my.text.winMessage.setFontSize(50);
+                my.text.winMessage.setBlendMode(Phaser.BlendModes.ADD);
+
+                this.game_end = true;
             }
             this.player_alive = false;
         });
@@ -230,13 +267,6 @@ class Platformer extends Phaser.Scene {
             }
         });
 
-        // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-Q', () => {
-            //my.sprite.player.x = 4100;
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-        }, this);
-
         // this.cameras.main.setBounds(0, 0, 4318, 50);
         // this.cameras.main.startFollow(my.sprite.player);
 
@@ -247,6 +277,13 @@ class Platformer extends Phaser.Scene {
         my.text.score = this.add.bitmapText(25, 30, "Minecraft1", "Coins: " + this.player_score);
         my.text.score.setFontSize(50);
         my.text.score.setBlendMode(Phaser.BlendModes.DARKEN);
+
+        // debug key listener (assigned to D key)
+        this.input.keyboard.on('keydown-Q', () => {
+            my.sprite.player.x = 4100;
+            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
+            this.physics.world.debugGraphic.clear()
+        }, this);
 
         my.sprite.player.body.setMaxVelocityX(300);
         my.sprite.player.body.setMaxVelocityY(900);
@@ -328,7 +365,7 @@ class Platformer extends Phaser.Scene {
                 this.LeftWallJumpCooldownCounter = this.LeftWallJumpCooldown;
             }
         } else {
-            if (this.space.isDown) {
+            if (this.space.isDown && (this.game_end == false)) {
                 this.updateScore();
                 my.text.deathMessage.destroy();
                 my.sprite.player.x = this.player_respawn_X;
@@ -338,6 +375,12 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.body.setBounce(0);
                 my.sprite.player.body.rotation = 0;
                 this.player_alive = true;
+            } else if (this.space.isDown && (this.game_end == true)) {
+                this.updateScore();
+                this.game_end = false;
+                this.player_alive = true;
+                my.sprite.player.destroy();
+                this.scene.start("bufferScene");
             }
         }
             

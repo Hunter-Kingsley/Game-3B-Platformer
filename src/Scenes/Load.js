@@ -75,6 +75,17 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'flag_wave',
+            frames: this.anims.generateFrameNumbers('spritesheet_basic', {
+                start: 111,
+                end: 112,
+            }),
+            frameRate: 2,
+            repeat: -1
+        });
+
+
          // ...and pass to the next Scene
          this.scene.start("platformerScene");
     }
