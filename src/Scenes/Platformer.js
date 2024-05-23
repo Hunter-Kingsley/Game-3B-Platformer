@@ -180,7 +180,6 @@ class Platformer extends Phaser.Scene {
                 my.vfx.coinGet = this.add.particles(obj2.x, obj2.y, "spark", {
                     scale: 0.1,
                     speed: Phaser.Math.Between(50, 100),
-                    tint: Math.random() * 0xFFFFFF,
                     lifespan: 350,
                     maxParticles: 5,
                     rotate: { random: true, start: 0, end: 180 },
@@ -313,7 +312,7 @@ class Platformer extends Phaser.Scene {
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-Q', () => {
-            my.sprite.player.x = 4100;
+            //my.sprite.player.x = 4100;
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
