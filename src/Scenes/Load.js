@@ -25,6 +25,21 @@ class Load extends Phaser.Scene {
         this.load.tilemapTiledJSON("Main_Level", "Main_Map.tmj");   // Tilemap in JSON
         this.load.bitmapFont("Minecraft1", "Minecraft_1.png", "Minecraft.fnt");
         this.load.bitmapFont("Minecraft0", "Minecraft_0.png", "Minecraft.fnt");
+
+        this.load.setPath("./assets/Digital_Audio/Audio/");
+        this.load.audio("jump", "phaseJump2.wav");
+        this.load.audio("coin_get", "powerUp9.wav");
+        this.load.audio("end_get", "powerUp3.wav");
+        this.load.audio("checkpoint_get", "powerUp4.wav");
+
+        this.load.setPath("./assets/Impact_Sounds/Audio/");
+        this.load.audio("bot_hit", "impactPlate_heavy_001.ogg");
+        this.load.audio("spike_hit", "impactMining_001.ogg");
+
+        this.load.setPath("./assets/Particles/PNG_(Transparent)/");
+        this.load.image("smoke", "smoke_07.png");
+        this.load.image("star", "star_08.png");
+        this.load.image("spark", "star_06.png");
     }
 
     create() {
